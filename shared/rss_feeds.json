@@ -1,0 +1,94 @@
+// shared/rss_feeds.json
+{
+    "조선일보": [
+      "https://www.chosun.com/arc/outboundfeeds/rss/category/politics/?outputType=xml",
+      "https://www.chosun.com/arc/outboundfeeds/rss/category/international/?outputType=xml",
+      "https://www.chosun.com/arc/outboundfeeds/rss/category/economy/?outputType=xml",
+      "https://www.chosun.com/arc/outboundfeeds/rss/category/society/?outputType=xml",
+      "https://www.chosun.com/arc/outboundfeeds/rss/category/culture/?outputType=xml"
+    ],
+    "뉴시스": [
+      "https://www.newsis.com/RSS/sokbo.xml",
+      "https://www.newsis.com/RSS/politics.xml",
+      "https://www.newsis.com/RSS/international.xml",
+      "https://www.newsis.com/RSS/economy.xml",
+      "https://www.newsis.com/RSS/bank.xml",
+      "https://www.newsis.com/RSS/industry.xml",
+      "https://www.newsis.com/RSS/society.xml",
+      "https://www.newsis.com/RSS/health.xml",
+      "https://www.newsis.com/RSS/met.xml",
+      "https://www.newsis.com/RSS/country.xml",
+      "https://www.newsis.com/RSS/sports.xml",
+      "https://www.newsis.com/RSS/entertain.xml",
+      "https://www.newsis.com/RSS/culture.xml",
+      "https://www.newsis.com/RSS/square.xml",
+      "https://www.newsis.com/RSS/photo.xml"
+    ],
+    "프레시안": [
+        "http://www.pressian.com/api/v3/site/rss/news",
+        "http://www.pressian.com/api/v3/site/rss/section/25",
+        "http://www.pressian.com/api/v3/site/rss/section/60",
+        "http://www.pressian.com/api/v3/site/rss/section/65",
+        "http://www.pressian.com/api/v3/site/rss/section/66",
+        "http://www.pressian.com/api/v3/site/rss/section/67",
+        "http://www.pressian.com/api/v3/site/rss/section/68",
+        "http://www.pressian.com/api/v3/site/rss/section/69",
+            "http://www.pressian.com/api/v3/site/rss/section/70",
+            "http://www.pressian.com/api/v3/site/rss/section/75"
+    ],
+    "여성신문": [
+      "https://www.womennews.co.kr/rss/allArticle.xml"
+    ],
+    "에이블뉴스": [
+      "https://www.ablenews.co.kr/rss/clickTop.xml",
+      "https://www.ablenews.co.kr/rss/S1N3.xml",
+      "https://www.ablenews.co.kr/rss/S1N4.xml",
+      "https://www.ablenews.co.kr/rss/S1N6.xml",
+      "https://www.ablenews.co.kr/rss/S1N7.xml",
+      "https://www.ablenews.co.kr/rss/S1N10.xml",
+      "https://www.ablenews.co.kr/rss/S1N11.xml",
+      "https://www.ablenews.co.kr/rss/S1N14.xml"
+
+    ],
+    "시사저널": [
+      "https://www.sisajournal.com/rss/allArticle.xml"
+    ],
+    "세계일보": [
+      "https://rss.segye.com/segye_politic.xml",
+      "https://rss.segye.com/segye_international.xml",
+      "https://rss.segye.com/segye_economy.xml",
+      "https://rss.segye.com/segye_society.xml",
+      "https://rss.segye.com/segye_culture.xml",
+      "https://rss.segye.com/segye_opinion.xml"
+    ],
+    "서울신문": [
+      "https://www.seoul.co.kr/news/rss_politics.php",
+      "https://www.seoul.co.kr/news/rss_economy.php",
+      "https://www.seoul.co.kr/news/rss_society.php",
+      "https://www.seoul.co.kr/news/rss_culture.php",
+      "https://www.seoul.co.kr/news/rss_sports.php"
+    ],
+    "미디어오늘": [
+      "https://www.mediatoday.co.kr/rss/allArticle.xml"
+    ],
+    "동아일보": [
+      "https://rss.donga.com/politics.xml",
+      "https://rss.donga.com/national.xml",
+      "https://rss.donga.com/economy.xml",
+      "https://rss.donga.com/international.xml",
+      "https://rss.donga.com/culture.xml",
+      "https://rss.donga.com/sports.xml"
+    ],
+    "매일노동뉴스": [
+      "https://www.labortoday.co.kr/rss/allArticle.xml"
+    ],
+    "경향신문": [
+        "https://www.khan.co.kr/rss/rssdata/total_news.xml",
+        "https://www.khan.co.kr/rss/rssdata/economy_news.xml",
+        "https://www.khan.co.kr/rss/rssdata/politic_news.xml",
+        "https://www.khan.co.kr/rss/rssdata/society_news.xml",
+        "https://www.khan.co.kr/rss/rssdata/local_news.xml",
+        "https://www.khan.co.kr/rss/rssdata/kh_world.xml",
+        "https://www.khan.co.kr/rss/rssdata/science_news.xml"
+    ]
+  }
