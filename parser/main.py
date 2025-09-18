@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, Any
 from redis import Redis
-from datetime import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Process
 from parser_factory import ParserFactory
 
@@ -218,6 +218,10 @@ class NewsParserService:
                     
                     time.sleep(1)
                     
+                    if consecutive_empty % 600 == 0 and self.worker_id == 0:
+                        cleanup_old_dirs(self.config.temp_base / 'html', hours=24)
+                        cleanup_old_dirs(self.config.temp_base / 'parsed', hours=24)
+
             except KeyboardInterrupt:
                 print(f"\n[Worker {self.worker_id}] 🛑 종료")
                 break
@@ -231,6 +235,19 @@ def worker_process(worker_id: int):
     service = NewsParserService(worker_id)
     service.run()
 
+def cleanup_old_dirs(base_path: Path, hours: int = 24):
+    """지정 시간(hours) 이상 지난 배치 디렉토리 자동 정리"""
+    cutoff = datetime.now() - timedelta(hours=hours)
+    for subdir in base_path.iterdir():
+        if not subdir.is_dir():
+            continue
+        try:
+            ts = datetime.strptime(subdir.name, "%Y%m%d_%H")
+            if ts < cutoff:
+                shutil.rmtree(subdir, ignore_errors=True)
+                print(f"🧹 오래된 디렉토리 삭제: {subdir}")
+        except ValueError:
+            continue
 
 def main():
     config = ParserConfig()

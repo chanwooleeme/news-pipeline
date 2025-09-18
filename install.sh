@@ -42,7 +42,7 @@ if ! crontab -l 2>/dev/null | grep -q "news-pipeline"; then
     echo ""
     if [[ ! $reply =~ ^[Nn]$ ]]; then
         dir=$(pwd)
-        (crontab -l 2>/dev/null; echo "0 * * * * cd $dir && docker compose run --rm downloader >> $dir/logs/cron.log 2>&1") | crontab -
+        (crontab -l 2>/dev/null; echo "*/10 * * * * cd $dir && flock -n /tmp/news_downloader.lock docker compose run --rm downloader >> $dir/logs/cron.log 2>&1 && find $dir/logs -name 'cron.log' -size +5M -exec truncate -s 0 {} \;") | crontab -
         echo "✅ Cron 설정 완료"
     fi
 fi
