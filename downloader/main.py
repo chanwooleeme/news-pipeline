@@ -10,6 +10,13 @@ from pathlib import Path
 from typing import Dict, List, Set
 from redis import Redis
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from prometheus_client import Counter, Summary, Gauge, start_http_server
+
+rss_fetch_failures_total = Counter("rss_fetch_failures_total", "RSS fetch failures")
+download_success_total = Counter("download_success_total", "Download success count")
+download_failure_total = Counter("download_failure_total", "Download failure count")
+redis_items_pushed_total = Counter("redis_items_pushed_total", "Items pushed to Redis")
+pipeline_batch_duration_seconds = Gauge("pipeline_batch_duration_seconds", "Total pipeline duration")
 
 
 # ============================================================
@@ -164,7 +171,7 @@ class NewsDownloadPipeline:
         self.config = DownloaderConfig()
         self.temp_dir = self.config.temp_base_dir / 'html' / timestamp
         self.temp_dir.mkdir(parents=True, exist_ok=True)
-
+        self.test_mode = os.getenv("TEST_MODE", "false").lower() == "true"
         self.rss_fetcher = RssFetcher(self.config)
         self.html_downloader = HtmlDownloader(self.config, self.temp_dir)
         self.redis_manager = RedisManager(self.config)
@@ -207,6 +214,10 @@ class NewsDownloadPipeline:
                     if url_hash not in existing:
                         url_pool.append({"publisher": publisher, "url": url, "url_hash": url_hash})
         random.shuffle(url_pool)  # 트래픽 분산
+        if self.test_mode:
+            url_pool = url_pool[:10]  # 최대 10개만 테스트 다운로드
+            print(f"🧪 [TEST MODE] URL 10개만 다운로드합니다.")
+
         return url_pool
 
 
@@ -278,6 +289,7 @@ class NewsDownloadPipeline:
 # ============================================================
 
 def main():
+    start_http_server(8001)  # Prometheus에서 수집할 /metrics 엔드포인트 오픈
     timestamp = datetime.now().strftime("%Y%m%d%H")
     pipeline = NewsDownloadPipeline(timestamp)
     pipeline.run()

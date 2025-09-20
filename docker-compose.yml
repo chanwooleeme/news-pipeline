@@ -17,6 +17,12 @@ services:
       - REDIS_URL=redis://redis:6379
       - S3_BUCKET=${S3_BUCKET}
       - TZ=Asia/Seoul
+      - TEST_MODE=false
+      - DOWNLOAD_INTERVAL_MINUTES=10
+      - JOB_MAX_INSTANCES=1
+      - IMMEDIATE_RUN=true
+      - PYTHON_BIN=/usr/local/bin/python
+      - MAIN_SCRIPT=/app/main.py
     volumes:
       - shared_temp:/app/temp           # 공유 볼륨
       - ./shared:/app/shared:ro
@@ -42,6 +48,63 @@ services:
       - redis
     restart: unless-stopped             # 계속 떠있음
 
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    container_name: redis_exporter
+    ports:
+      - "9121:9121"
+    command:
+      - "--redis.addr=redis://redis:6379"
+    depends_on:
+      - redis
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=3d"
+      - "--web.enable-lifecycle"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
+
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - TZ=Asia/Seoul
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
+  prometheus_data:
+  grafana_data:
   redis_data:
-  shared_temp:                          # 공유 볼륨
+  shared_temp:    
