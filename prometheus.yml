@@ -19,9 +19,9 @@ scrape_configs:
     static_configs:
       - targets: ["downloader:8000"]
 
-  - job_name: "downloader"
+  - job_name: "pushgateway"
     static_configs:
-      - targets: ["downloader:8001"]
+      - targets: ["pushgateway:9091"]
 
   - job_name: "parser"
     static_configs:
