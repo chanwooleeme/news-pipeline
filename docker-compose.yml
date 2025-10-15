@@ -23,7 +23,7 @@ services:
       - ./logs:/app/logs
     depends_on:
       - redis
-    restart: "no"
+    restart: unless-stopped
 
   parser:
     build: ./parser
