@@ -7,12 +7,16 @@ services:
     volumes:
       - redis_data:/data
     restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
+
 
   downloader:
     build: ./downloader
     environment:
       - REDIS_URL=redis://redis:6379
       - S3_BUCKET=${S3_BUCKET}
+      - TZ=Asia/Seoul
     volumes:
       - shared_temp:/app/temp           # 공유 볼륨
       - ./shared:/app/shared:ro
@@ -28,7 +32,9 @@ services:
       - S3_BUCKET=${S3_BUCKET}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - NUM_THREADS=2
+      - NUM_WORKERS=2
+      - TZ=Asia/Seoul
+
     volumes:
       - shared_temp:/app/temp           # 공유 볼륨
       - ./logs:/app/logs
