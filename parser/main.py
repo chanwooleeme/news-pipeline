@@ -11,6 +11,15 @@ from datetime import datetime, timedelta
 from multiprocessing import Process
 from parser_factory import ParserFactory
 
+from prometheus_client import Counter, Summary, start_http_server
+
+parser_tasks_processed_total = Counter("parser_tasks_processed_total", "Total processed tasks")
+parser_task_failures_total = Counter("parser_task_failures_total", "Total failed tasks")
+parser_s3_upload_success_total = Counter("parser_s3_upload_success_total", "S3 upload success count")
+parser_s3_upload_failure_total = Counter("parser_s3_upload_failure_total", "S3 upload failure count")
+parser_task_duration_seconds = Summary("parser_task_duration_seconds", "Task processing duration in seconds")
+parser_idle_seconds_total = Counter("parser_idle_seconds_total", "Total idle seconds")
+
 
 class ParserConfig:
     """파서 설정"""
@@ -149,10 +158,12 @@ class NewsParserService:
                 
                 if result.returncode == 0:
                     print(f"[Worker {self.worker_id}]   ✓ JSON 업로드 완료")
+                    parser_s3_upload_success_total.inc()
                     # 업로드 성공하면 로컬 삭제
                     shutil.rmtree(parsed_local, ignore_errors=True)
                 else:
                     print(f"[Worker {self.worker_id}]   ✗ JSON 업로드 실패: {result.stderr}")
+                    parser_s3_upload_failure_total.inc()
             
             print(f"[Worker {self.worker_id}]   ✓ 배치 업로드 및 정리 완료")
             
@@ -209,7 +220,8 @@ class NewsParserService:
                         self.process_task(task)
                 else:
                     consecutive_empty += 1
-                    
+                    parser_idle_seconds_total.inc()
+
                     if consecutive_empty == 1:
                         self.check_batch_complete()  # S3 업로드 여기서!
                     
@@ -252,6 +264,7 @@ def cleanup_old_dirs(base_path: Path, hours: int = 24):
 def main():
     config = ParserConfig()
     num_workers = config.num_workers
+    start_http_server(8002)  # Prometheus에서 수집할 /metrics 엔드포인트 오픈
     
     print(f"🚀 Parser 서비스 시작 ({num_workers} workers)")
     print(f"🔧 환경: {'Docker' if config.is_docker else '로컬'}")

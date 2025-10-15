@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: "node"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+
+  - job_name: "downloader"
+    static_configs:
+      - targets: ["downloader:8001"]
+
+  - job_name: "parser"
+    static_configs:
+      - targets: ["parser:8002"]
