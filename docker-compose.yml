@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  downloader:
+    build: ./downloader
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - S3_BUCKET=${S3_BUCKET}
+    volumes:
+      - shared_temp:/app/temp           # 공유 볼륨
+      - ./shared:/app/shared:ro
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: "no"
+
+  parser:
+    build: ./parser
+    environment:
+      - REDIS_URL=tcp://redis:6379
+      - S3_BUCKET=${S3_BUCKET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - NUM_THREADS=2
+    volumes:
+      - shared_temp:/app/temp           # 공유 볼륨
+      - ./logs:/app/logs
+    depends_on:
+      - redis
+    restart: unless-stopped             # 계속 떠있음
+
+volumes:
+  redis_data:
+  shared_temp:                          # 공유 볼륨
