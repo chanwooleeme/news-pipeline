@@ -13,11 +13,14 @@ services:
 
   downloader:
     build: ./downloader
+    ports:
+      - "8000:8000"
+      - "8001:8001"
     environment:
       - REDIS_URL=redis://redis:6379
       - S3_BUCKET=${S3_BUCKET}
       - TZ=Asia/Seoul
-      - TEST_MODE=false
+      - TEST_MODE=true
       - DOWNLOAD_INTERVAL_MINUTES=10
       - JOB_MAX_INSTANCES=1
       - IMMEDIATE_RUN=true
@@ -33,6 +36,8 @@ services:
 
   parser:
     build: ./parser
+    ports:
+      - "8002:8002"
     environment:
       - REDIS_URL=redis://redis:6379
       - S3_BUCKET=${S3_BUCKET}
