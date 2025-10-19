@@ -191,34 +191,46 @@ class NewsDownloadPipeline:
         rss_feeds = self.rss_fetcher.load_feeds()
         print(f"📰 {len(rss_feeds)}개 언론사 RSS 로드 완료")
 
-        all_urls = set()
-        for publisher, feed_urls in rss_feeds.items():
-            for feed_url in feed_urls:
-                urls = self.rss_fetcher.fetch_urls(feed_url)
-                all_urls.update(urls)
+        # ✅ 1️⃣ 모든 RSS를 한 번만 호출하고 결과 저장
+        all_urls_by_publisher = {}
 
-        # URL 해시 생성 및 Redis 비교
+        for publisher, feed_urls in rss_feeds.items():
+            urls = []
+            for feed_url in feed_urls:
+                fetched = self.rss_fetcher.fetch_urls(feed_url)
+                urls.extend(fetched)
+            all_urls_by_publisher[publisher] = urls
+
+        # ✅ 2️⃣ 전체 URL set 생성 (중복 제거)
+        all_urls = {u for urls in all_urls_by_publisher.values() for u in urls}
+
+        # ✅ 3️⃣ Redis에서 기존 해시 확인
         url_hashes = {HtmlDownloader.generate_hash(u) for u in all_urls}
         existing = self.redis_manager.get_existing_hashes(url_hashes)
-        new_urls = [u for u in all_urls if HtmlDownloader.generate_hash(u) not in existing]
 
-        print(f"📥 신규 URL {len(new_urls)}개 (중복 {len(existing)}개 제외)")
+        # ✅ 4️⃣ 신규 URL만 필터링
+        print(f"📥 신규 URL {len(all_urls) - len(existing)}개 (중복 {len(existing)}개 제외)")
 
-        # publisher 정보와 매핑
+        # ✅ 5️⃣ publisher 정보 매핑 (이미 로드한 데이터 재활용)
         url_pool = []
-        for publisher, feed_urls in rss_feeds.items():
-            for feed_url in feed_urls:
-                urls = self.rss_fetcher.fetch_urls(feed_url)
-                for url in urls:
-                    url_hash = HtmlDownloader.generate_hash(url)
-                    if url_hash not in existing:
-                        url_pool.append({"publisher": publisher, "url": url, "url_hash": url_hash})
-        random.shuffle(url_pool)  # 트래픽 분산
+        for publisher, urls in all_urls_by_publisher.items():
+            for url in urls:
+                url_hash = HtmlDownloader.generate_hash(url)
+                if url_hash not in existing:
+                    url_pool.append({
+                        "publisher": publisher,
+                        "url": url,
+                        "url_hash": url_hash
+                    })
+
+        # ✅ 6️⃣ 트래픽 분산 + 테스트 모드 처리
+        random.shuffle(url_pool)
         if self.test_mode:
-            url_pool = url_pool[:10]  # 최대 10개만 테스트 다운로드
+            url_pool = url_pool[:10]
             print(f"🧪 [TEST MODE] URL 10개만 다운로드합니다.")
 
         return url_pool
+
 
 
     # ----------------------------------------------------------
