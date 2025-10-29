@@ -10,12 +10,20 @@ services:
     environment:
       - TZ=Asia/Seoul
 
+  pushgateway:  # 🔥 추가!
+    image: prom/pushgateway
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Seoul
 
   downloader:
     build: ./downloader
     ports:
       - "8000:8000"
-      - "8001:8001"
+      # - "8001:8001"  # 🔥 main.py에서 8001 안 쓰니까 삭제 가능
     environment:
       - REDIS_URL=redis://redis:6379
       - S3_BUCKET=${S3_BUCKET}
@@ -26,12 +34,15 @@ services:
       - IMMEDIATE_RUN=true
       - PYTHON_BIN=/usr/local/bin/python
       - MAIN_SCRIPT=/app/main.py
+      - MAX_WORKERS=12
+      - PUSHGATEWAY_URL=pushgateway:9091  # 🔥 추가!
     volumes:
-      - shared_temp:/app/temp           # 공유 볼륨
+      - shared_temp:/app/temp
       - ./shared:/app/shared:ro
       - ./logs:/app/logs
     depends_on:
       - redis
+      - pushgateway  # 🔥 추가!
     restart: unless-stopped
 
   parser:
@@ -45,13 +56,12 @@ services:
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - NUM_WORKERS=2
       - TZ=Asia/Seoul
-
     volumes:
-      - shared_temp:/app/temp           # 공유 볼륨
+      - shared_temp:/app/temp
       - ./logs:/app/logs
     depends_on:
       - redis
-    restart: unless-stopped             # 계속 떠있음
+    restart: unless-stopped
 
   node-exporter:
     image: prom/node-exporter
@@ -88,10 +98,11 @@ services:
       - "--storage.tsdb.path=/prometheus"
       - "--storage.tsdb.retention.time=3d"
       - "--web.enable-lifecycle"
+    depends_on:
+      - pushgateway  # 🔥 추가!
     restart: unless-stopped
     environment:
       - TZ=Asia/Seoul
-
 
   grafana:
     image: grafana/grafana
@@ -113,4 +124,4 @@ volumes:
   prometheus_data:
   grafana_data:
   redis_data:
-  shared_temp:    
+  shared_temp:
